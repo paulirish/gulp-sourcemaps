@@ -334,6 +334,51 @@ test('write: should not throw when unable to fetch missing sourceContent', funct
         .write(file);
 });
 
+test('write: should set the sourceLocation with option includePhysicalLocation=true', function(t) {
+    var file = makeFile();
+    var pipeline = sourcemaps.write({includePhysicalLocation: true});
+    pipeline
+        .on('data', function (data) {
+            t.ok(data.sourceMap.sourceLocation, 'should set sourceLocation');
+            t.ok(Array.isArray(data.sourceMap.sourceLocation), 'should should set sourceLocation to an array');
+            var location = data.sourceMap.sourceLocation[0];
+            t.equal(location.includes('assets/helloworld.js'), true, 'should handle folder/file path correctly' + location);
+            t.equal(location.includes('assetshelloworld.js'), false, 'should handle folder/file path correctly' + location);
+            t.end();
+        })
+        .write(file);
+});
+
+
+test('write: should set resolved the sourceLocation with option includePhysicalLocation=true', function(t) {
+    var file = makeNestedFile();
+    var pipeline = sourcemaps.write('dir1/maps', {includePhysicalLocation: true});
+    var fileCount = 0;
+    var outFiles = [];
+    pipeline
+        .on('data', function (data) {
+            outFiles.push(data);
+            fileCount++;
+            if (fileCount !== 2)
+                return;
+
+            outFiles.reverse().map(function (file) {
+                if (file.sourceMap) {
+                    file.sourceMap.sourceLocation.forEach(function (location) {
+                        t.equal(location.includes('assetshelloworld.js'), false, 'should handle folder/file path correctly' + location);
+                        t.equal(location.includes('assets/helloworld.js'), true, 'should handle folder/file path correctly' + location);
+                    });
+                }
+            });
+            t.end();
+        })
+        .on('error', function() {
+            t.fail('emitted error');
+            t.end();
+        })
+        .write(file);
+});
+
 test('write: should set the sourceRoot by option sourceRoot', function(t) {
     var file = makeFile();
     var pipeline = sourcemaps.write({sourceRoot: '/testSourceRoot'});

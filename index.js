@@ -223,6 +223,15 @@ module.exports.write = function write(destPath, options) {
     // fix paths if Windows style paths
     sourceMap.file = unixStylePath(file.relative);
 
+    if (options.includePhysicalLocation) {
+      // not sure if i should be using this before or after mapSources runs.
+      // definitely dont need sourceRoot as I think file.path is absolute and correct
+      sourceMap.sourceLocation = sourceMap.sources.map(function(filePath) {
+        return unixStylePath([file.base, filePath].join('/'));
+      });
+    }
+
+
     if (options.mapSources && typeof options.mapSources === 'function') {
       sourceMap.sources = sourceMap.sources.map(function(filePath) {
         return options.mapSources(filePath);
@@ -233,13 +242,14 @@ module.exports.write = function write(destPath, options) {
       return unixStylePath(filePath);
     });
 
+
     if (typeof options.sourceRoot === 'function') {
       sourceMap.sourceRoot = options.sourceRoot(file);
     } else {
       sourceMap.sourceRoot = options.sourceRoot;
     }
     if (sourceMap.sourceRoot === null) {
-        sourceMap.sourceRoot = undefined;
+      sourceMap.sourceRoot = undefined;
     }
 
     if (options.includeContent) {

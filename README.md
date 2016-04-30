@@ -250,7 +250,48 @@ gulp.src(['src/test.js', 'src/testdir/test2.js'], { base: 'src' })
   });
   ```
 
-- `mapSources`
+- `includePhysicalLocation`
+
+  If you're using a tool that uses the physical location on disk of each file, this option adds all disk locations of each source into the source map.
+
+  Example:
+  ```javascript
+  gulp.task('javascript', function() {
+    var stream = gulp.src('src/**/*.js')
+      .pipe(sourcemaps.init())
+        .pipe(plugin1())
+        .pipe(plugin2())
+      .pipe(sourcemaps.write('.', {
+        includePhysicalLocation: true
+      }))
+      .pipe(gulp.dest('public/scripts'));
+  });
+  ```
+  ```json
+  {
+    "version": 3,
+    "file": "main.css",
+    "sources": [
+      "normalize.scss",
+      "main.css",
+      "root.scss",
+      "_theme.scss",
+      "main.scss"
+    ],
+    "sourceLocation": [
+      "/Users/username/code/goweb/scss/normalize.scss",
+      "/Users/username/code/goweb/scss/main.css",
+      "/Users/username/code/goweb/scss/root.scss",
+      "/Users/username/code/goweb/scss/_theme.scss",
+      "/Users/username/code/goweb/scss/main.scss"
+    ],
+    "names": [],
+    "mappings": "/* ... */",  
+    "sourcesContent": "/* ... */",
+  }
+  ```
+  
+  - `mapSources`
 
   This option gives full control over the source paths. It takes a function that is called for every source and receives the default source path as a parameter.
 
